@@ -1,0 +1,13 @@
+# Backend-only dependency set, used by Render/Railway deploys so the
+# platform doesn't have to install Streamlit/Plotly just to run the API.
+# Also used by the daily-news GitHub Actions workflow (news/fetch_news.py).
+# Keep this in sync with the backend-relevant portion of requirements.txt.
+pandas>=2.2
+numpy>=1.26
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+anthropic>=0.34
+scikit-learn>=1.4
+joblib>=1.3
+requests>=2.32

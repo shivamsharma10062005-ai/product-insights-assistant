@@ -1,0 +1,7 @@
+# Frontend-only dependency set, used by Streamlit Community Cloud, which
+# installs directly from this file when it detects frontend/app.py as the
+# entrypoint. Keep in sync with the frontend-relevant portion of requirements.txt.
+streamlit>=1.38
+plotly>=5.24
+requests>=2.32
+pandas>=2.2

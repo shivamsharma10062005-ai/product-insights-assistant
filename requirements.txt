@@ -1,0 +1,29 @@
+# Full dependency set for local development (runs backend + frontend +
+# tests together). For platform deploys, Render/Railway use
+# requirements-backend.txt and Streamlit Community Cloud uses
+# requirements-frontend.txt instead -- see DEPLOYMENT.md.
+
+# Analytics layer
+pandas>=2.2
+numpy>=1.26
+
+# ML layer (churn-risk model)
+scikit-learn>=1.4
+joblib>=1.3
+
+# Backend
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+
+# AI narration layer (optional at runtime -- app works without a key,
+# but the package must be installed for the LLM code path to import)
+anthropic>=0.34
+
+# Frontend
+streamlit>=1.38
+plotly>=5.24
+requests>=2.32
+
+# Testing
+pytest>=8.3

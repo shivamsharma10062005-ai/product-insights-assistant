@@ -1,0 +1,25 @@
+# Environment
+.env
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# The generated data/product_insights.db is intentionally NOT ignored --
+# it's committed directly (fixed seed, ~29MB) so Render doesn't have to
+# regenerate 800k rows on every cold start. Regenerate locally any time
+# with `python data/generate_data.py` if you change the generator.
+
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/

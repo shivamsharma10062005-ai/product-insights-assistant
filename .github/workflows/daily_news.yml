@@ -1,0 +1,47 @@
+name: daily-news-digest
+
+# Runs once a day (06:00 UTC) to fetch a fresh product/growth news digest
+# and commit the updated database back to the repo. Render and Streamlit
+# both auto-redeploy on pushes to main, so this is what makes the "daily"
+# feature actually daily, without needing any paid cron infrastructure.
+#
+# Requires two repo secrets (Settings -> Secrets and variables -> Actions):
+#   NEWSAPI_KEY        from newsapi.org (required)
+#   ANTHROPIC_API_KEY   optional -- without it, the digest falls back to a
+#                        plain headline list instead of a Claude summary
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}  # lets you trigger it manually from the Actions tab, for testing
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements-backend.txt
+
+      - name: Fetch and summarize news
+        env:
+          NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python news/fetch_news.py
+
+      - name: Commit updated database
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/product_insights.db
+          git diff --staged --quiet && echo "No changes to commit" || git commit -m "Daily news digest update"
+          git push
