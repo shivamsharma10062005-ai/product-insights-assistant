@@ -308,7 +308,7 @@ def render_narrative_card(data: dict):
         st.caption(f"\U0001F987 {data['fallback_reason']}")
 
 
-def render_chart_for(intent: str, result: dict):
+def render_chart_for(intent: str, result: dict, key: str = None):
     if intent in ("churn", "churn_default"):
         df = pd.DataFrame(result["ranked"])
         fig = go.Figure(go.Bar(
@@ -318,7 +318,7 @@ def render_chart_for(intent: str, result: dict):
         ))
         fig.update_layout(title="Churn rate by channel", xaxis_title="Churn rate (%)")
         _themed(fig)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=key)
 
     elif intent == "funnel":
         stages = result["overall"]["stages"]
@@ -326,7 +326,7 @@ def render_chart_for(intent: str, result: dict):
         fig = go.Figure(go.Funnel(y=df["stage"], x=df["count"], marker={"color": CHART_COLORS}))
         fig.update_layout(title="Overall activation funnel")
         _themed(fig)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=key)
 
     elif intent == "retention":
         if "by_channel" in result:
@@ -339,7 +339,7 @@ def render_chart_for(intent: str, result: dict):
             fig = go.Figure(go.Scatter(y=result["curve_pct"], mode="lines+markers", line=dict(color=GOLD)))
             fig.update_layout(title=f"Retention curve — {result['scope']}", xaxis_title="Week", yaxis_title="% still active")
         _themed(fig)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=key)
 
     elif intent == "ab_test":
         fig = go.Figure(go.Bar(
@@ -351,7 +351,7 @@ def render_chart_for(intent: str, result: dict):
         fig.update_layout(title=f"{result['metric'].title()} rate: {result['channel_a']} vs {result['channel_b']}",
                            yaxis_title="Rate (%)")
         _themed(fig)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=key)
 
     elif intent == "ltv":
         df = pd.DataFrame(result["ranked"])
@@ -362,7 +362,7 @@ def render_chart_for(intent: str, result: dict):
         ))
         fig.update_layout(title="Estimated LTV by channel", yaxis_title="Estimated LTV (INR)")
         _themed(fig)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=key)
 
 
 def _themed(fig: go.Figure):
@@ -413,10 +413,10 @@ if st.session_state.pending_question:
     else:
         st.session_state.history.insert(0, data)
 
-for data in st.session_state.history:
+for i, data in enumerate(st.session_state.history):
     st.markdown(f"**Q: {data['question']}**")
     render_narrative_card(data)
-    render_chart_for(data["intent"], data["analytics_result"])
+    render_chart_for(data["intent"], data["analytics_result"], key=f"history_{i}")
     with st.expander("Raw analytics JSON (what the AI was given — nothing more)"):
         st.json(data["analytics_result"])
     st.divider()
@@ -430,28 +430,28 @@ with tabs[0]:
     if err:
         st.error(err)
     else:
-        render_chart_for("retention", data)
+        render_chart_for("retention", data, key="explore_retention")
 
 with tabs[1]:
     data, err = call_api("GET", "/metrics/funnel")
     if err:
         st.error(err)
     else:
-        render_chart_for("funnel", data)
+        render_chart_for("funnel", data, key="explore_funnel")
 
 with tabs[2]:
     data, err = call_api("GET", "/metrics/churn")
     if err:
         st.error(err)
     else:
-        render_chart_for("churn", data)
+        render_chart_for("churn", data, key="explore_churn")
 
 with tabs[3]:
     data, err = call_api("GET", "/metrics/ltv")
     if err:
         st.error(err)
     else:
-        render_chart_for("ltv", data)
+        render_chart_for("ltv", data, key="explore_ltv")
 
 with tabs[4]:
     info, err = call_api("GET", "/predict/churn-risk/info")
